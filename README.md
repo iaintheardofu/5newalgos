@@ -95,6 +95,13 @@ Each layer has independent peer-reviewed validation. **The integration is the mo
 |   |-- test_active_inference.py    #   19 tests for Algorithm #4
 |   `-- test_three_factor.py        #   27 tests for Algorithm #5
 |
+|-- algorithm-visualizer/            # Interactive JS visualizations for algorithm-visualizer.org
+|   |-- algo1_astrocyte.js           #   Tripartite synapse with Ca2+ dynamics
+|   |-- algo2_dendrite.js            #   NMDA branch networks with EWC
+|   |-- algo3_myelin.js              #   DCLS delays + polychronous groups
+|   |-- algo4_active_inference.js    #   Free-energy minimization agent
+|   `-- algo5_three_factor.js        #   Three-factor plasticity + sleep-replay
+|
 |-- visuals/                        # 8 master visualization PNGs
 |-- generate_all_visuals.py         # Master visualization generator
 |-- TECHNICAL_OMNIBUS.md            # Full technical documentation (728 lines)
@@ -123,6 +130,24 @@ cd 05_three_factor_plasticity && python lifelong_learning_demo.py
 # Generate all 43 visualizations
 python generate_all_visuals.py
 ```
+
+---
+
+## Interactive Visualizations (algorithm-visualizer.org)
+
+All five algorithms have interactive, step-by-step visualizations built for [algorithm-visualizer.org](https://algorithm-visualizer.org). To use them:
+
+1. Go to [algorithm-visualizer.org/scratch-paper/new](https://algorithm-visualizer.org/scratch-paper/new)
+2. Paste the contents of any file from `algorithm-visualizer/` into the code editor
+3. Click **Build**, then **Play**
+
+| File | Algorithm | What You See |
+|------|-----------|-------------|
+| `algo1_astrocyte.js` | Astrocyte Tripartite Synapse | Membrane voltages, Ca2+ waves, spike raster, 10x10 weight matrix with tripartite STDP |
+| `algo2_dendrite.js` | Active Dendrite NMDA | Branch activations with context gating, EWC Fisher penalty, continual learning across 3 tasks |
+| `algo3_myelin.js` | Myelin-Plastic Polychronous SNN | 12x12 conduction delay matrix, myelination dynamics, polychronous group detection |
+| `algo4_active_inference.js` | Active Inference Agent | Belief posteriors, action probabilities, free energy, prediction error, observation likelihood matrix |
+| `algo5_three_factor.js` | Three-Factor Plasticity | Weight/eligibility matrices, DA/ACh/NE neuromodulators, reward prediction error, sleep-replay phases |
 
 ---
 
