@@ -1,7 +1,7 @@
 # Technical Omnibus: Brain-Inspired Algorithms for Neuromorphic Edge & Defense
 
-**Version:** 1.0
-**Date:** 26 May 2026
+**Version:** 2.0
+**Date:** 27 May 2026
 **Author:** Mike Pendleton, The AI Cowboys LLC (SDVOSB)
 **Classification:** Unclassified / Distribution A
 
@@ -19,6 +19,7 @@
 8. [Hardware Mapping](#8-hardware-mapping)
 9. [Benchmark Methodology](#9-benchmark-methodology)
 10. [Defense Applications](#10-defense-applications)
+11. [Interactive Visualizations](#11-interactive-visualizations)
 
 ---
 
@@ -109,34 +110,45 @@ Delta W_ij = eta * STDP(t_post - t_pre) * h(c_{astro})
 h(c) = sigmoid(c - c_thresh)  (Ca2+ gate)
 ```
 
-### 2.3 Implementation Architecture
+### 2.3 Visualizations
+
+| | |
+|:---:|:---:|
+| ![Ca2+ Dynamics](01_astrocyte_tripartite/astrocyte_ca_dynamics.png) | ![Attention Heatmap](01_astrocyte_tripartite/attention_heatmap.png) |
+| **Astrocyte Ca2+ Dynamics:** Slow integration on 100ms-10s timescales, showing glutamate-driven calcium transients and gliotransmitter release thresholds. | **Attention Heatmap (QKV Recovery):** Softmax gating over astrocyte states recovers query-key-value attention patterns equivalent to transformer heads. |
+| ![Spike Raster](01_astrocyte_tripartite/spike_raster.png) | ![Weight Evolution](01_astrocyte_tripartite/weight_evolution.png) |
+| **Spike Raster:** Tripartite network activity showing excitatory/inhibitory population dynamics modulated by astrocyte gating. | **Weight Evolution:** Synaptic weight trajectories under tripartite STDP, demonstrating Ca2+-gated plasticity convergence. |
+| ![Network Architecture](01_astrocyte_tripartite/network_architecture.png) | ![Energy Comparison](01_astrocyte_tripartite/energy_comparison.png) |
+| **Network Architecture:** 784-input, 400-excitatory, 100-inhibitory, 40-astrocyte topology with tripartite connectivity. | **Energy Comparison:** Power consumption vs transformers -- 50x reduction at comparable accuracy. |
+
+### 2.4 Implementation Architecture
 
 ```
-┌─────────────────────────────────────────────┐
-│              Input Layer (784)               │
-└─────────────┬───────────────────────────────┘
-              │ feedforward spikes
-┌─────────────v───────────────────────────────┐
-│         Excitatory LIF Layer (400)          │
-│  ┌────────────────────────────────────────┐ │
-│  │  Astrocyte Layer (40 astrocytes)       │ │
-│  │  Each wraps ~10 synaptic groups        │ │
-│  │  Ca2+ dynamics: tau_a ~ 1s             │ │
-│  │  Gating: softmax over neighbors        │ │
-│  └────────────────────────────────────────┘ │
-│  Tripartite STDP plasticity                 │
-└─────────────┬───────────────────────────────┘
-              │ lateral inhibition
-┌─────────────v───────────────────────────────┐
-│         Inhibitory LIF Layer (100)          │
-└─────────────┬───────────────────────────────┘
-              │ readout
-┌─────────────v───────────────────────────────┐
-│         Output / Classification (10)        │
-└─────────────────────────────────────────────┘
++-------------------------------------------------+
+|              Input Layer (784)                   |
++--------------+----------------------------------+
+               | feedforward spikes
++--------------v----------------------------------+
+|         Excitatory LIF Layer (400)              |
+|  +----------------------------------------+    |
+|  |  Astrocyte Layer (40 astrocytes)        |    |
+|  |  Each wraps ~10 synaptic groups         |    |
+|  |  Ca2+ dynamics: tau_a ~ 1s              |    |
+|  |  Gating: softmax over neighbors         |    |
+|  +----------------------------------------+    |
+|  Tripartite STDP plasticity                     |
++--------------+----------------------------------+
+               | lateral inhibition
++--------------v----------------------------------+
+|         Inhibitory LIF Layer (100)              |
++--------------+----------------------------------+
+               | readout
++--------------v----------------------------------+
+|         Output / Classification (10)            |
++-------------------------------------------------+
 ```
 
-### 2.4 Key Parameters
+### 2.5 Key Parameters
 
 | Parameter | Symbol | Typical Value | Range |
 |-----------|--------|--------------|-------|
@@ -149,7 +161,7 @@ h(c) = sigmoid(c - c_thresh)  (Ca2+ gate)
 | Astrocyte Ca2+ threshold | c_thresh | 0.5 | 0.2-0.8 |
 | Gating temperature | T | 1.0 | 0.1-10 |
 
-### 2.5 Benchmark Results
+### 2.6 Benchmark Results
 
 | Dataset | NALSM | Backprop SNN | Transformer | MLP |
 |---------|-------|-------------|-------------|-----|
@@ -158,11 +170,11 @@ h(c) = sigmoid(c - c_thresh)  (Ca2+ gate)
 | Fashion-MNIST | 85.84% | 92.3% | 93.5% | 89.7% |
 | Power (inference) | ~1 mW | ~100 mW | ~10 W | ~1 W |
 
-### 2.6 Energy Analysis
+### 2.7 Energy Analysis
 
 ```
 Operation         | Transformer (7B)  | Tripartite SNN
-─────────────────-+───────────────────+────────────────
+------------------+-------------------+----------------
 Parameters        | 7 billion         | ~50 million
 Memory            | ~14 GB            | <500 MB
 Inference power   | ~50 W             | ~1 W (Akida)
@@ -233,7 +245,18 @@ Dendritic sparsity MULTIPLIES (not adds) with regularizer:
   -> 100x stronger protection on task-allocated branches
 ```
 
-### 3.3 Continual Learning Performance
+### 3.3 Visualizations
+
+| | |
+|:---:|:---:|
+| ![NMDA Plateaus](02_active_dendrite/plots/nmda_plateau_traces.png) | ![Branch-Task Allocation](02_active_dendrite/plots/branch_task_allocation.png) |
+| **NMDA Plateau Traces:** Voltage response showing subthreshold → supralinear NMDA plateau transition at co-activation threshold. Duration 50-200ms, far longer than standard EPSPs. | **Branch-Task Allocation:** Heatmap showing how different tasks naturally recruit different dendritic branches, providing built-in task isolation. |
+| ![Forgetting Comparison](02_active_dendrite/plots/catastrophic_forgetting_comparison.png) | ![Context Gating](02_active_dendrite/plots/context_gating_visualization.png) |
+| **Catastrophic Forgetting Comparison:** Active dendrites maintain >99.9% Task 1 accuracy after 5 sequential tasks, vs 19.8% for naive MLP and 72.3% for EWC. | **Context-Dependent Gating:** Top-down context vectors gate which dendritic branches activate per task, enabling task-specific subnetworks without explicit task labels. |
+| ![Dendritic Tree](02_active_dendrite/plots/dendritic_tree_structure.png) | ![Parameter Efficiency](02_active_dendrite/plots/parameter_efficiency.png) |
+| **Dendritic Tree Structure:** Multi-compartment neuron with basal (feedforward), apical (context), and lateral (inhibition) compartments mapped to Loihi 2 DA1/DA2/DA3. | **Parameter Efficiency:** 100x parameter compression vs equivalent MLP through branch-specific weight sharing and NMDA sparsity. |
+
+### 3.4 Continual Learning Performance
 
 | Method | Task 1 Accuracy (after 5 tasks) | Interference |
 |--------|-------------------------------|-------------|
@@ -243,7 +266,7 @@ Dendritic sparsity MULTIPLIES (not adds) with regularizer:
 | LoRA fine-tuning | 70-95% | 5-30% |
 | **Active Dendrites** | **99.9%** | **<0.1%** |
 
-### 3.4 Hardware Mapping
+### 3.5 Hardware Mapping
 
 **Intel Loihi 2:**
 - 3 dendritic accumulator compartments per neuron (DA1, DA2, DA3)
@@ -334,7 +357,20 @@ Goal: minimize spike-time dispersion
      -> enable polychronous group formation
 ```
 
-### 4.5 Benchmark: Spiking Heidelberg Digits (SHD)
+### 4.5 Visualizations
+
+| | |
+|:---:|:---:|
+| ![Temporal Pattern](03_myelin_delay/outputs/temporal_pattern_demo.png) | ![Spike Raster](03_myelin_delay/outputs/spike_raster.png) |
+| **Temporal Pattern Demo:** Polychronous firing sequences with precisely-timed spike arrivals synchronized by adaptive myelination. | **Spike Raster:** Network-wide activity showing delay-structured temporal coding, with visible polychronous group activation patterns. |
+| ![Delay Distribution](03_myelin_delay/outputs/delay_distribution.png) | ![Polychronous Groups](03_myelin_delay/outputs/polychronous_groups.png) |
+| **Delay Distribution:** Histogram of learned conduction delays after OMP myelination, showing task-driven clustering around optimal delay values. | **Polychronous Groups:** Detected time-locked firing patterns. Group count scales super-linearly in neuron count (>> Hopfield attractor capacity). |
+| ![Conduction Velocity](03_myelin_delay/outputs/conduction_velocity_heatmap.png) | ![DCLS Convolution](03_myelin_delay/outputs/dcls_temporal_conv.png) |
+| **Conduction Velocity Heatmap:** Per-synapse velocity map showing myelination-driven velocity adaptation. Correlated pre/post pairs develop faster conduction. | **DCLS Temporal Convolution:** Dilated convolution with learnable spacings -- delays reformulated as differentiable spacing parameters with Gaussian kernels. |
+| ![SHD Accuracy](03_myelin_delay/outputs/shd_accuracy.png) | |
+| **SHD Benchmark:** 95.07% accuracy (new SOTA) on Spiking Heidelberg Digits, achieved without recurrent connections using only feedforward LIF with learnable delays. | |
+
+### 4.6 Benchmark: Spiking Heidelberg Digits (SHD)
 
 | Model | Accuracy | Recurrent? | Spikes |
 |-------|----------|-----------|--------|
@@ -403,7 +439,20 @@ Precision (inverse variance):
      DA (VTA/SNc) on reward prediction error
 ```
 
-### 5.4 Performance Comparison
+### 5.4 Visualizations
+
+| | |
+|:---:|:---:|
+| ![Free Energy](04_active_inference/figures/free_energy_minimization.png) | ![Belief Updating](04_active_inference/figures/belief_updating.png) |
+| **Free Energy Minimization:** Variational free energy trajectory showing convergence through perceptual inference. F = Complexity - Accuracy decomposition visible in dual descent. | **Belief Updating:** Posterior belief state evolution as agent receives observations and updates via precision-weighted prediction errors. |
+| ![Epistemic vs Pragmatic](04_active_inference/figures/epistemic_vs_pragmatic.png) | ![Exploration-Exploitation](04_active_inference/figures/exploration_exploitation.png) |
+| **Epistemic vs Pragmatic Value:** Expected free energy decomposition showing automatic exploration-exploitation trade-off without hyperparameters. | **Exploration-Exploitation Balance:** Phase diagram showing agent behavior naturally transitioning from epistemic (info-seeking) to pragmatic (goal-directed) as uncertainty decreases. |
+| ![Prediction Error](04_active_inference/figures/prediction_error_hierarchy.png) | ![Sample Efficiency](04_active_inference/figures/ai_vs_ppo_sample_efficiency.png) |
+| **Prediction Error Hierarchy:** Multi-level prediction errors flowing bottom-up through cortical-inspired layers (L2/3 superficial pyramidal cells). | **Sample Efficiency vs PPO:** Active inference achieves target performance in 1-10 episodes vs millions for PPO, a 100-1000x improvement. |
+| ![Cost Comparison](04_active_inference/figures/cost_comparison.png) | ![Mastermind](04_active_inference/figures/mastermind_solve_distribution.png) |
+| **Cost Comparison:** $0.05 vs $263 per Mastermind solve -- 5,260x cost reduction vs o1-preview with 100% solve rate (vs 71%). | **Mastermind Solve Distribution:** Histogram of guess counts showing tight distribution around 5.6 guesses with 3.1s solve time. |
+
+### 5.5 Performance Comparison
 
 | Benchmark | Active Inference | Baseline | Improvement |
 |-----------|-----------------|----------|-------------|
@@ -472,7 +521,20 @@ Effect:
 - PNAS 2022: adult-born neurons act as neural regularizers
 ```
 
-### 6.4 Combined System Performance
+### 6.4 Visualizations
+
+| | |
+|:---:|:---:|
+| ![Eligibility Traces](05_three_factor_plasticity/eligibility_trace_dynamics.png) | ![Neuromodulators](05_three_factor_plasticity/neuromodulator_signals.png) |
+| **Eligibility Trace Dynamics:** Synapse-local eligibility traces bridging the action-reward delay (tau_e ~ 100ms-1s). STDP events create traces that persist until a neuromodulatory signal commits the update. | **DA/ACh/NE Signals:** Three neuromodulatory channels operating simultaneously: dopamine (reward prediction error), acetylcholine (attention/precision), norepinephrine (surprise/exploration). |
+| ![Sleep Replay](05_three_factor_plasticity/sleep_replay_recovery.png) | ![Neurogenesis](05_three_factor_plasticity/neurogenesis_unit_turnover.png) |
+| **Sleep-Replay Recovery:** Offline Hebbian replay during simulated sleep phases recovers accuracy on previously learned tasks without storing any exemplars. Equivalent to annealed contrastive divergence. | **Neurogenesis Turnover:** Bottom-5% contributing units reinitialized periodically. Acts as structured dropout, preventing capacity saturation in continual learning scenarios. |
+| ![Continual Learning](05_three_factor_plasticity/continual_learning_no_replay.png) | ![BWT/FWT](05_three_factor_plasticity/bwt_fwt_comparison.png) |
+| **Continual Learning (No Buffer):** 94% average accuracy across 5 sequential tasks with no rehearsal buffer. Data sovereignty compliant -- no stored exemplars. | **Backward/Forward Transfer:** BWT >-1% (minimal forgetting) and FWT >5% (positive transfer to unseen tasks) across the full task sequence. |
+| ![Weight Evolution](05_three_factor_plasticity/eligibility_weight_evolution.png) | ![On-Device](05_three_factor_plasticity/on_device_learning_trajectory.png) |
+| **Eligibility-Gated Weight Evolution:** Weight trajectories showing three-factor update: dW = eligibility * modulator * RPE. Only synapses with active eligibility traces update when reward arrives. | **On-Device Learning:** Learning trajectory on simulated 1W edge device showing convergence within power budget. Compatible with Loihi 2 DA2 channel and Akida binary STDP. |
+
+### 6.5 Combined System Performance
 
 | Scenario | EWC | Replay Buffer | Three-Factor + Sleep + Neurogenesis |
 |----------|-----|--------------|-------------------------------------|
@@ -488,50 +550,52 @@ Effect:
 
 ### 7.1 Full Stack Composition
 
+![Architecture Stack](visuals/architecture_stack.png)
+
 ```
 Layer 5: DECISION
-┌──────────────────────────────────────────────────────┐
-│  Active Inference / Predictive Coding (#4)            │
-│  - Free energy minimization for action selection      │
-│  - Epistemic + pragmatic value decomposition          │
-│  - Cortical hierarchy with precision weighting        │
-└──────────────────────┬───────────────────────────────┘
-                       │ prediction errors / beliefs
-Layer 4: LEARNING      │
-┌──────────────────────v───────────────────────────────┐
-│  Three-Factor Plasticity + Sleep + Neurogenesis (#5)  │
-│  - Eligibility traces bridge action-reward delay      │
-│  - Neuromodulatory broadcast (DA/ACh/NE)              │
-│  - Offline consolidation + neural turnover            │
-└──────────────────────┬───────────────────────────────┘
-                       │ learned representations
-Layer 3: REPRESENTATION│
-┌──────────────────────v───────────────────────────────┐
-│  Active-Dendrite Sub-units (#2)                       │
-│  - Multi-compartment neurons (basal/apical)           │
-│  - NMDA plateau nonlinearity                          │
-│  - Branch-specific task allocation                    │
-└──────────────────────┬───────────────────────────────┘
-                       │ gated features
-Layer 2: ATTENTION     │
-┌──────────────────────v───────────────────────────────┐
-│  Astrocyte-Modulated Tripartite Synapses (#1)         │
-│  - Slow Ca2+ dynamics (multi-timescale memory)        │
-│  - Softmax gating (attention mechanism)               │
-│  - Tripartite STDP plasticity                         │
-└──────────────────────┬───────────────────────────────┘
-                       │ temporally coded spikes
-Layer 1: TEMPORAL      │
-┌──────────────────────v───────────────────────────────┐
-│  Polychronous Learnable-Delay SNN (#3)                │
-│  - DCLS: differentiable delay learning                │
-│  - OMP: homeostatic myelination                       │
-│  - Polychronous group formation                       │
-└──────────────────────┬───────────────────────────────┘
-                       │
-┌──────────────────────v───────────────────────────────┐
-│  Hardware: Akida 2 / Loihi 2 / Photonic-SNN          │
-└──────────────────────────────────────────────────────┘
++------------------------------------------------------+
+|  Active Inference / Predictive Coding (#4)            |
+|  - Free energy minimization for action selection      |
+|  - Epistemic + pragmatic value decomposition          |
+|  - Cortical hierarchy with precision weighting        |
++----------------------+-------------------------------+
+                       | prediction errors / beliefs
+Layer 4: LEARNING      |
++----------------------v-------------------------------+
+|  Three-Factor Plasticity + Sleep + Neurogenesis (#5)  |
+|  - Eligibility traces bridge action-reward delay      |
+|  - Neuromodulatory broadcast (DA/ACh/NE)              |
+|  - Offline consolidation + neural turnover            |
++----------------------+-------------------------------+
+                       | learned representations
+Layer 3: REPRESENTATION|
++----------------------v-------------------------------+
+|  Active-Dendrite Sub-units (#2)                       |
+|  - Multi-compartment neurons (basal/apical)           |
+|  - NMDA plateau nonlinearity                          |
+|  - Branch-specific task allocation                    |
++----------------------+-------------------------------+
+                       | gated features
+Layer 2: ATTENTION     |
++----------------------v-------------------------------+
+|  Astrocyte-Modulated Tripartite Synapses (#1)         |
+|  - Slow Ca2+ dynamics (multi-timescale memory)        |
+|  - Softmax gating (attention mechanism)               |
+|  - Tripartite STDP plasticity                         |
++----------------------+-------------------------------+
+                       | temporally coded spikes
+Layer 1: TEMPORAL      |
++----------------------v-------------------------------+
+|  Polychronous Learnable-Delay SNN (#3)                |
+|  - DCLS: differentiable delay learning                |
+|  - OMP: homeostatic myelination                       |
+|  - Polychronous group formation                       |
++----------------------+-------------------------------+
+                       |
++----------------------v-------------------------------+
+|  Hardware: Akida 2 / Loihi 2 / Photonic-SNN          |
++------------------------------------------------------+
 ```
 
 ### 7.2 Cross-Layer Data Flows
@@ -550,7 +614,11 @@ Layer 1: TEMPORAL      │
 
 ## 8. Hardware Mapping
 
-### 8.1 BrainChip Akida 2
+### 8.1 Hardware Alignment
+
+![Hardware Alignment](visuals/hardware_alignment.png)
+
+### 8.2 BrainChip Akida 2
 
 | Algorithm Layer | Akida Feature | Mapping |
 |----------------|---------------|---------|
@@ -559,7 +627,7 @@ Layer 1: TEMPORAL      │
 | Plasticity (#5) | On-chip STDP (binary) | Last-layer learning |
 | Overall | 8-bit, ~1W, 50 TOPS | Deployment target |
 
-### 8.2 Intel Loihi 2
+### 8.3 Intel Loihi 2
 
 | Algorithm Layer | Loihi 2 Feature | Mapping |
 |----------------|----------------|---------|
@@ -569,7 +637,7 @@ Layer 1: TEMPORAL      │
 | Three-factor (#5) | DA2 third-factor channel | Neuromodulatory broadcast |
 | Overall | 32-bit graded spikes, programmable | Prototyping target |
 
-### 8.3 Photonic Neuromorphic
+### 8.4 Photonic Neuromorphic
 
 | Algorithm Layer | Photonic Feature | Mapping |
 |----------------|-----------------|---------|
@@ -614,7 +682,11 @@ Layer 1: TEMPORAL      │
 
 ## 10. Defense Applications
 
-### 10.1 Counter-UAS Swarm Intent Inference
+### 10.1 Overview
+
+![Defense Applications](visuals/defense_applications.png)
+
+### 10.2 Counter-UAS Swarm Intent Inference
 
 **Approach:** #1 (Astrocyte) + #4 (Active Inference)
 ```
@@ -626,7 +698,7 @@ Advantage: handles deceptive maneuvers via epistemic value
 Power budget: <5W (fits UAS payload)
 ```
 
-### 10.2 On-Device ISR Adaptation
+### 10.3 On-Device ISR Adaptation
 
 **Approach:** #2 (Active Dendrites)
 ```
@@ -639,7 +711,7 @@ Advantage: no cloud connection needed, no data exfiltration
 AFWERX relevance: direct counter-swarm STTR extension
 ```
 
-### 10.3 RF/SIGINT at the Sensor
+### 10.4 RF/SIGINT at the Sensor
 
 **Approach:** #3 (Learnable Delays)
 ```
@@ -651,7 +723,7 @@ Platform: photonic-SNN for extreme bandwidth
 AFRL/RY relevance: Sensors Directorate application
 ```
 
-### 10.4 Contested-EM Autonomy
+### 10.5 Contested-EM Autonomy
 
 **Approach:** #4 (Active Inference)
 ```
@@ -662,7 +734,7 @@ Planning: explicit uncertainty quantification
 Advantage: handles adversarial deception natively
 ```
 
-### 10.5 In-Mission Lifelong Learning
+### 10.6 In-Mission Lifelong Learning
 
 **Approach:** #5 (Three-Factor + Sleep + Neurogenesis)
 ```
@@ -677,9 +749,43 @@ DARPA L2M alignment: lifelong learning machines
 
 ---
 
+## 11. Interactive Visualizations
+
+All five algorithms have step-by-step interactive visualizations built for [algorithm-visualizer.org](https://algorithm-visualizer.org). Source code is in the `algorithm-visualizer/` directory.
+
+### 11.1 How to Use
+
+1. Go to [algorithm-visualizer.org/scratch-paper/new](https://algorithm-visualizer.org/scratch-paper/new)
+2. Paste the contents of any `.js` file from `algorithm-visualizer/` into the code editor
+3. Click **Build**, then **Play**
+
+### 11.2 Algorithm Visualizer Files
+
+| File | Algorithm | Tracers Used | What You See |
+|------|-----------|-------------|-------------|
+| `algo1_astrocyte.js` | Astrocyte Tripartite Synapse | Array2D (weights), Array1D (spikes), Chart (voltage, Ca2+), Log | LIF membrane dynamics, Ca2+ wave integration, tripartite STDP weight updates, 10x10 weight matrix evolution |
+| `algo2_dendrite.js` | Active Dendrite NMDA | Array2D (branches), Array1D (context), Chart (output, EWC), Log | Branch-specific NMDA activations with context gating, EWC Fisher penalty tracking, continual learning across 3 sequential tasks |
+| `algo3_myelin.js` | Myelin-Plastic Polychronous SNN | Array2D (delays, groups), Array1D (spikes), Chart (myelin), Log | 12-neuron network with 12x12 conduction delay matrix, OMP myelination dynamics, real-time polychronous group detection |
+| `algo4_active_inference.js` | Active Inference Agent | Array1D (beliefs, actions), Array2D (A-matrix), Chart (FE, PE), Log | Belief posterior evolution, action probability distributions, free energy descent, prediction error magnitudes, observation likelihood matrix |
+| `algo5_three_factor.js` | Three-Factor Plasticity | Array2D (weights, eligibility), Array1D (neuromod, activity), Chart (RPE), Log | Weight/eligibility trace matrices, DA/ACh/NE neuromodulator levels, reward prediction error, wake/sleep phase transitions, neurogenesis events |
+
+### 11.3 Implementation Notes
+
+Each visualization uses the algorithm-visualizer Tracer API:
+- **Array1DTracer / Array2DTracer:** Matrix/vector state displays with cell-level highlighting
+- **ChartTracer:** Time-series plots for continuous variables (voltage, calcium, free energy)
+- **LogTracer:** Step-by-step narration of algorithm execution
+- **Tracer.delay():** Animation breakpoints for step-through playback
+
+All implementations are self-contained JavaScript files requiring only `algorithm-visualizer` as a dependency (provided by the platform).
+
+---
+
 ## Appendix A: Moat Analysis
 
 ### Patent Filing Strategy
+
+![Moat Diagram](visuals/moat_diagram.png)
 
 1. **Method-of-use patents** (highest priority):
    - "Astrocyte-modulated attention on Akida TENN"
@@ -712,6 +818,8 @@ DARPA L2M alignment: lifelong learning machines
 
 ## Appendix B: Funding Alignment
 
+![Funding Map](visuals/funding_map.png)
+
 | Program | Approach Fit | Mechanism | Priority |
 |---------|-------------|-----------|----------|
 | AFWERX Open Topic D2P2 | All 5; #3 strongest | Up to $1.25M / 21 mo | Highest |
@@ -725,4 +833,15 @@ DARPA L2M alignment: lifelong learning machines
 
 ---
 
-*End of Technical Omnibus*
+## Appendix C: Master Visualizations
+
+| | |
+|:---:|:---:|
+| ![SOTA Comparison](visuals/sota_comparison.png) | ![Energy Comparison](visuals/energy_comparison.png) |
+| **SOTA Comparison:** Performance benchmarks across all 5 algorithms vs transformer/MLP baselines. | **Energy Efficiency:** Power consumption comparison showing 10-50x reduction on neuromorphic hardware. |
+| ![TRL Roadmap](visuals/trl_roadmap.png) | ![Hardware Alignment](visuals/hardware_alignment.png) |
+| **Technology Readiness Roadmap:** Current TRL 2-4 with clear path to TRL 6+ via AFWERX/DARPA funding. | **Hardware Alignment:** Algorithm-to-chip mapping across Akida, Loihi 2, NorthPole, and photonic platforms. |
+
+---
+
+*End of Technical Omnibus v2.0*
